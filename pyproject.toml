@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "funccheck"
+version = "0.1.0"
+description = "Command-line tool to scan Python and C source files and report function calls."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "2mdtln" }
+]
+keywords = ["cli", "static-analysis", "python", "c", "functions", "ast"]
+license = { text = "MIT" }
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: C",
+  "Environment :: Console",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Quality Assurance",
+  "License :: OSI Approved :: MIT License"
+]
+
+[project.urls]
+Homepage = "https://github.com/2mdtln/funccheck"
+Repository = "https://github.com/2mdtln/funccheck"
+Issues = "https://github.com/2mdtln/funccheck/issues"
+
+[project.scripts]
+funccheck = "funccheck.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
