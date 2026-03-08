@@ -42,6 +42,7 @@ funccheck src tests some_file.py
 - `-c`, `--count`: show counts like `func (3)`.
 - `-n`: print one function per line.
 - `-a`, `--all`: merge all scanned results under one combined title.
+- `-v`, `--version`: show installed version and exit.
 - `-h`, `--help`: show help.
 
 ## Output Examples

@@ -4,6 +4,7 @@ import argparse
 from collections import Counter
 from pathlib import Path
 
+from funccheck import __version__
 from funccheck.formatting import render_output
 from funccheck.scanner import collect_function_calls
 
@@ -12,6 +13,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="funccheck",
         description="List called functions in Python and C files.",
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="Show the installed version and exit.",
     )
     parser.add_argument(
         "paths",
