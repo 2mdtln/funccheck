@@ -99,6 +99,7 @@ funccheck -a -c src tests
 ## Notes
 
 - Files in common cache/venv/build directories are skipped automatically.
+- `funccheck` checks PyPI at startup and prints an update notice when a newer version is available.
 - If no calls are found, `funccheck` prints: `No function calls found.`
 
 ## License

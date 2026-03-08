@@ -1,12 +1,52 @@
 from __future__ import annotations
 
 import argparse
+import json
+import re
+import sys
 from collections import Counter
 from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
 
 from funccheck import __version__
 from funccheck.formatting import render_output
 from funccheck.scanner import collect_function_calls
+
+
+def _version_parts(version: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in re.findall(r"\d+", version))
+
+
+def _is_newer_version(candidate: str, current: str) -> bool:
+    candidate_parts = _version_parts(candidate)
+    current_parts = _version_parts(current)
+    max_len = max(len(candidate_parts), len(current_parts))
+    padded_candidate = candidate_parts + (0,) * (max_len - len(candidate_parts))
+    padded_current = current_parts + (0,) * (max_len - len(current_parts))
+    return padded_candidate > padded_current
+
+
+def _get_latest_pypi_version(timeout: float = 1.5) -> str | None:
+    url = "https://pypi.org/pypi/funccheck/json"
+    try:
+        with urlopen(url, timeout=timeout) as response:
+            payload = json.load(response)
+    except (URLError, TimeoutError, OSError, json.JSONDecodeError):
+        return None
+    latest = payload.get("info", {}).get("version")
+    return latest if isinstance(latest, str) and latest else None
+
+
+def _maybe_print_update_notice() -> None:
+    latest = _get_latest_pypi_version()
+    if latest and _is_newer_version(latest, __version__):
+        print(
+            f"✨ A new version of funccheck is available: {latest} "
+            f"(installed: {__version__}).",
+            file=sys.stderr,
+        )
+        print("Update with: pip install --upgrade funccheck\n", file=sys.stderr)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -58,6 +98,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    _maybe_print_update_notice()
     input_paths: list[str] = list(args.paths)
 
     counts = collect_function_calls(
