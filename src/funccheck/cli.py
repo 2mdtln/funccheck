@@ -11,7 +11,16 @@ from urllib.request import urlopen
 
 from funccheck import __version__
 from funccheck.formatting import render_output
-from funccheck.scanner import collect_function_calls
+from funccheck.scanner import ScanIssue, collect_function_calls
+
+
+def _format_issue(issue: ScanIssue) -> str:
+    location = ""
+    if issue.line is not None:
+        location = f":{issue.line}"
+        if issue.column is not None:
+            location += f":{issue.column}"
+    return f"{issue.file_label}{location}: {issue.message}"
 
 
 def _version_parts(version: str) -> tuple[int, ...]:
@@ -101,10 +110,21 @@ def main(argv: list[str] | None = None) -> int:
     _maybe_print_update_notice()
     input_paths: list[str] = list(args.paths)
 
-    counts = collect_function_calls(
+    counts, issues = collect_function_calls(
         [Path(path) for path in input_paths],
         include_user_defined=args.include_user_defined,
     )
+    if issues:
+        print("Skipped files with parse errors:", file=sys.stderr)
+        for issue in issues:
+            print(f"  {_format_issue(issue)}", file=sys.stderr)
+        runtime = sys.version.split()[0]
+        print(
+            f"funccheck is running on Python {runtime}. "
+            "If the file uses newer Python syntax, run funccheck with a "
+            "newer interpreter.",
+            file=sys.stderr,
+        )
     if not counts:
         print("No function calls found.")
         return 0

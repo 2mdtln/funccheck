@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import re
 from collections import Counter
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator
 
@@ -38,6 +39,14 @@ _C_FUNC_DEF_RE = re.compile(
 _C_BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 _C_LINE_COMMENT_RE = re.compile(r"//.*?$", re.MULTILINE)
 _C_STRING_RE = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', re.DOTALL)
+
+
+@dataclass(frozen=True)
+class ScanIssue:
+    file_label: str
+    message: str
+    line: int | None = None
+    column: int | None = None
 
 
 def _iter_source_files(paths: Iterable[Path]) -> Iterator[Path]:
@@ -127,10 +136,11 @@ def _display_path(path: Path) -> str:
 
 def collect_function_calls(
     paths: Iterable[Path], include_user_defined: bool = False
-) -> Counter[tuple[str, str]]:
+) -> tuple[Counter[tuple[str, str]], list[ScanIssue]]:
     user_defined: set[str] = set()
     python_calls_by_file: list[tuple[str, list[str]]] = []
     c_calls_by_file: list[tuple[str, list[str]]] = []
+    issues: list[ScanIssue] = []
 
     for source_file in _iter_source_files(paths):
         file_label = _display_path(source_file)
@@ -143,7 +153,15 @@ def collect_function_calls(
         if suffix == ".py":
             try:
                 tree = ast.parse(source, filename=str(source_file))
-            except SyntaxError:
+            except SyntaxError as exc:
+                issues.append(
+                    ScanIssue(
+                        file_label=file_label,
+                        message=exc.msg,
+                        line=exc.lineno,
+                        column=exc.offset,
+                    )
+                )
                 continue
             user_defined.update(_defined_symbol_names(tree))
             python_calls_by_file.append((file_label,
@@ -172,4 +190,4 @@ def collect_function_calls(
                 continue
             if name not in user_defined:
                 counts[(file_label, name)] += 1
-    return counts
+    return counts, issues
