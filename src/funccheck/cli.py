@@ -11,7 +11,7 @@ from urllib.request import urlopen
 
 from funccheck import __version__
 from funccheck.formatting import render_output
-from funccheck.scanner import ScanIssue, collect_function_calls
+from funccheck.scanner import ScanIssue, collect_function_calls_with_issues
 
 
 def _format_issue(issue: ScanIssue) -> str:
@@ -101,6 +101,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Group all functions under one combined title.",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit with status 1 if any files are skipped due to parse errors.",
+    )
     return parser
 
 
@@ -110,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     _maybe_print_update_notice()
     input_paths: list[str] = list(args.paths)
 
-    counts, issues = collect_function_calls(
+    counts, issues = collect_function_calls_with_issues(
         [Path(path) for path in input_paths],
         include_user_defined=args.include_user_defined,
     )
@@ -121,12 +126,17 @@ def main(argv: list[str] | None = None) -> int:
         runtime = sys.version.split()[0]
         print(
             f"funccheck is running on Python {runtime}. "
-            "If the file uses newer Python syntax, run funccheck with a "
-            "newer interpreter.",
+            "These errors can be caused by invalid syntax or syntax that "
+            "requires a newer interpreter.",
             file=sys.stderr,
         )
+        if args.strict:
+            return 1
     if not counts:
-        print("No function calls found.")
+        if issues:
+            print("No function calls found in successfully scanned files.")
+        else:
+            print("No function calls found.")
         return 0
 
     if args.all:

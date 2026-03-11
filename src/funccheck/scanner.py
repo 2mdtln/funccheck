@@ -136,6 +136,15 @@ def _display_path(path: Path) -> str:
 
 def collect_function_calls(
     paths: Iterable[Path], include_user_defined: bool = False
+) -> Counter[tuple[str, str]]:
+    counts, _issues = collect_function_calls_with_issues(
+        paths, include_user_defined=include_user_defined
+    )
+    return counts
+
+
+def collect_function_calls_with_issues(
+    paths: Iterable[Path], include_user_defined: bool = False
 ) -> tuple[Counter[tuple[str, str]], list[ScanIssue]]:
     user_defined: set[str] = set()
     python_calls_by_file: list[tuple[str, list[str]]] = []

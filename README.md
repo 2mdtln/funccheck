@@ -42,6 +42,7 @@ funccheck src tests some_file.py
 - `-c`, `--count`: show counts like `func (3)`.
 - `-n`: print one function per line.
 - `-a`, `--all`: merge all scanned results under one combined title.
+- `--strict`: exit with status `1` if any files are skipped due to parse errors.
 - `-v`, `--version`: show installed version and exit.
 - `-h`, `--help`: show help.
 
@@ -94,6 +95,9 @@ funccheck -n src
 
 # Merge all input paths and show counts
 funccheck -a -c src tests
+
+# Fail if any scanned file cannot be parsed
+funccheck --strict src
 ```
 
 ## Notes
@@ -101,6 +105,7 @@ funccheck -a -c src tests
 - Files in common cache/venv/build directories are skipped automatically.
 - `funccheck` checks PyPI at startup and prints an update notice when a newer version is available.
 - If no calls are found, `funccheck` prints: `No function calls found.`
+- Parse errors are reported on `stderr`; with `--strict`, they also cause a non-zero exit status.
 
 ## License
 
