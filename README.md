@@ -13,13 +13,13 @@ By default, user-defined symbols are excluded. Use `-d`/`--def` to include them.
 From PyPI:
 
 ```bash
-pip install funccheck
+pipx install funccheck
 ```
 
-From source:
+From source (GitHub):
 
 ```bash
-pip install .
+pipx install git+https://github.com/2mdtln/funccheck.git
 ```
 
 ## Quick Start
